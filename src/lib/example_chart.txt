@@ -1,0 +1,389 @@
+        $(document).ready(function () {
+            showGraph('All');
+        });
+
+	$("#mode").change(function (evt) {
+    	    var modeSelection = $("#mode").val();
+
+            showGraph(modeSelection);
+	});
+
+        function showGraph(modeSelection)
+        {
+	    var php_script;
+
+	    if ( modeSelection == 'All' ) {
+		php_script = 'bardata.php';
+	    }
+	    else {
+		php_script = 'modedata.php';
+	    }
+
+            {
+                $.post(php_script,
+                function (data)
+                {
+                    var gender = [];
+                    var gender_cnt  = [];
+                    var age = [];
+                    var age_cnt  = [];
+                    var race = [];
+                    var race_cnt  = [];
+                    var ethnicity = [];
+                    var ethnicity_cnt  = [];
+                    var education = [];
+                    var education_cnt  = [];
+                    var zipcode = [];
+                    var zipcode_cnt  = [];
+
+
+
+                    for (var i in data) {
+                      if ( data[i].mode != "All" ) {
+                        if ( data[i].mode == modeSelection ) {
+                            TOTAL = data[i].count;
+			    continue;
+			}
+
+			if ( data[i].mode != modeSelection.replace(/-/g, '')  ) {
+			    continue;
+			}
+		      }
+		      else {
+                        if ( data[i].item == '-TOTAL-') {
+                            TOTAL = data[i].count;
+                        }
+		      }
+
+		      document.getElementById("N").innerHTML = '&nbspN = ' + TOTAL;
+
+
+
+                        if ( data[i].item == 'Gender') {
+                            if ( data[i].code == '-99' ) {
+                                 data[i].response = 'No response';
+			    }
+                            gender.push(data[i].response);
+			    var pct = (data[i].count/TOTAL) * 100;
+                            gender_cnt.push(pct.toFixed(1));
+			}
+                        if ( data[i].item == 'Age') {
+                            if ( data[i].code == '-99' ) {
+                                 data[i].response = 'No response';
+			    }
+                            age.push(data[i].response);
+			    var pct = (data[i].count/TOTAL) * 100;
+                            age_cnt.push(pct.toFixed(1));
+			}
+                        if ( data[i].item == 'Race') {
+                            if ( data[i].code == '-99' ) {
+                                 data[i].response = 'No response';
+			    }
+                            race.push(data[i].response);
+			    var pct = (data[i].count/TOTAL) * 100;
+                            race_cnt.push(pct.toFixed(1));
+			}
+                        if ( data[i].item == 'Ethnicity') {
+                            if ( data[i].code == '-99' ) {
+                                 data[i].response = 'No response';
+			    }
+                            ethnicity.push(data[i].response);
+			    var pct = (data[i].count/TOTAL) * 100;
+                            ethnicity_cnt.push(pct.toFixed(1));
+			}
+                        if ( data[i].item == 'Education') {
+                            if ( data[i].code == '-99' ) {
+                                 data[i].response = 'No response';
+			    }
+                            education.push(data[i].response);
+			    var pct = (data[i].count/TOTAL) * 100;
+                            education_cnt.push(pct.toFixed(1));
+			}
+                        if ( data[i].item == 'Zipcode') {
+                            if ( data[i].code == '88888' ) {
+                                 data[i].response = 'Waiting for verification';
+			    }
+                            if ( data[i].code == '99999' ) {
+                                 data[i].response = 'No response';
+			    }
+                            zipcode.push(data[i].response);
+			    var pct = (data[i].count/TOTAL) * 100;
+                            zipcode_cnt.push(pct.toFixed(1));
+			}
+                    }
+
+                    var genderdata = {
+                        labels: gender,
+        	    	datasets: [
+          	    	{
+            		    label: "Gender",
+            		    data: gender_cnt,
+			    backgroundColor: palette('sol-base', gender.length).map(function(hex) {
+        		 	return '#' + hex;
+      			    })
+          	    	}
+        	    	]
+                    };
+
+
+                    var agedata = {
+                        labels: age,
+        	    	datasets: [
+          	    	{
+            		    label: "Age Category",
+            		    data: age_cnt,
+			    backgroundColor: palette('sol-base', age.length).map(function(hex) {
+        			return '#' + hex;
+      			    })
+          	    	}
+        	    	]
+                    };
+
+                    var racedata = {
+                        labels: race,
+        	    	datasets: [
+          	    	{
+            		    label: "Race",
+            		    data: race_cnt,
+			    backgroundColor: palette('sol-base', race.length).map(function(hex) {
+				// console.log(hex);
+        			return '#' + hex;
+      			    })
+          	    	}
+        	    	]
+                    };
+
+                    var ethnicitydata = {
+                        labels: ethnicity,
+        	    	datasets: [
+          	    	{
+            		    label: "Ethnicity",
+            		    data: ethnicity_cnt,
+			    backgroundColor: palette('sol-base', ethnicity.length).map(function(hex) {
+				// console.log(hex);
+        			return '#' + hex;
+      			    })
+          	    	}
+        	    	]
+                    };
+
+                    var educationdata = {
+                        labels: education,
+        	    	datasets: [
+          	    	{
+            		    label: "Education",
+            		    data: education_cnt,
+			    backgroundColor: palette('sol-base', race.length).map(function(hex) {
+				// console.log(hex);
+        			return '#' + hex;
+      			    })
+          	    	}
+        	    	]
+                    };
+
+                    var zipcodedata = {
+                        labels: zipcode,
+        	    	datasets: [
+          	    	{
+            		    label: "ZIP Code",
+            		    data: zipcode_cnt,
+			    backgroundColor: palette('tol-rainbow', zipcode.length).map(function(hex) {
+				// console.log(hex);
+        			return '#' + hex;
+      			    })
+          	    	}
+        	    	]
+                    };
+
+		    $("canvas#zipcodeCanvas").remove();
+		    $("div#zipcode").append('<canvas id="zipcodeCanvas"></canvas>');
+		    var chartTarget = document.getElementById("zipcodeCanvas").getContext("2d");
+                    zipcodeCanvas = new Chart(chartTarget, {
+                        type: 'bar',
+                        data: zipcodedata,
+                        options: {
+                          responsive: true,
+                            legend: {
+                            display: false
+                          },
+                          tooltips: {
+                            callbacks: {
+                                label: function(tooltipItem, data) {
+                                    return tooltipItem.yLabel;
+                                }
+                            }
+                          },
+                          scaleShowValues: true,
+                          scales: {
+                            xAxes: [{
+                                ticks: {
+                                    stepSize: 1,
+                                    maxTicksLimit: 50,
+                                    autoSkip: false
+                                }
+                            }],
+                            yAxes: [ {
+                                display: true,
+				scaleBeginAtZero : true,
+                                scaleLabel: {
+                                    display: true,
+                                    fontSize: '20',
+                                    labelString: 'Percentage'
+                                }
+                            } ]
+                          }
+                        }
+                    });
+
+		    $("canvas#genderCanvas").remove();
+		    $("div#gender").append('<canvas id="genderCanvas"></canvas>');
+		    var chartTarget = document.getElementById("genderCanvas").getContext("2d");
+                    genderCanvas = new Chart(chartTarget, {
+                        type: 'bar',
+                        data: genderdata,
+			options: {
+      			  responsive: true,
+	            	    legend: {
+            	    	    display: false
+        		  },
+        		  tooltips: {
+            		    callbacks: {
+               			label: function(tooltipItem, data) {
+                      		    return tooltipItem.yLabel;
+               			}
+            		    }
+        		  },
+			  scaleShowValues: true,
+      			  scales: {
+        		    yAxes: [ {
+          			display: true,
+				scaleBeginAtZero : true,
+          			scaleLabel: {
+            			    display: true,
+                                    fontSize: '14',
+            			    labelString: 'Percentage'
+          			}
+        		    } ]
+      			  }
+    			}
+                    });
+
+		    $("canvas#ageCanvas").remove();
+		    $("div#age").append('<canvas id="ageCanvas"></canvas>');
+		    var chartTarget = document.getElementById("ageCanvas").getContext("2d");
+                    ageCanvas = new Chart(chartTarget, {
+                        type: 'bar',
+                        data: agedata,
+			options: {
+      			  responsive: true,
+	            	    legend: {
+            	    	    display: false
+        		  },
+        		  tooltips: {
+            		    callbacks: {
+               			label: function(tooltipItem, data) {
+                      		    return tooltipItem.yLabel;
+               			}
+            		    }
+        		  },
+      			  scales: {
+        		    yAxes: [ {
+          			display: true,
+				scaleBeginAtZero : true,
+          			scaleLabel: {
+            			    display: true,
+                                    fontSize: '14',
+            			    labelString: 'Percentage'
+          			}
+        		    } ]
+      			  }
+    			}
+                    });
+
+		    $("canvas#raceCanvas").remove();
+		    $("div#race").append('<canvas id="raceCanvas"></canvas>');
+		    var chartTarget = document.getElementById("raceCanvas").getContext("2d");
+                    raceCanvas = new Chart(chartTarget, {
+                        type: 'bar',
+                        data: racedata,
+			options: {
+      			  responsive: true,
+	            	    legend: {
+            	    	    display: false
+        		  },
+        		  tooltips: {
+            		    callbacks: {
+               			label: function(tooltipItem, data) {
+                      		    return tooltipItem.yLabel;
+               			}
+            		    }
+        		  },
+      			  scales: {
+			    xAxes: [{
+      				ticks: {
+				    stepSize: 1,
+				    maxTicksLimit: 50,
+        			    autoSkip: false
+      				}
+    			    }],
+        		    yAxes: [ {
+          			display: true,
+				scaleBeginAtZero : true,
+          			scaleLabel: {
+            			    display: true,
+                                    fontSize: '14',
+            			    labelString: 'Percentage'
+          			}
+        		    } ]
+      			  }
+    			}
+                    });
+
+		    $("canvas#ethnicityCanvas").remove();
+		    $("div#ethnicity").append('<canvas id="ethnicityCanvas"></canvas>');
+		    var chartTarget = document.getElementById("ethnicityCanvas").getContext("2d");
+                    ethnicityCanvas = new Chart(chartTarget, {
+                        type: 'bar',
+                        data: ethnicitydata,
+			options: {
+      			  responsive: true,
+	            	    legend: {
+            	    	    display: false
+        		  },
+        		  tooltips: {
+            		    callbacks: {
+               			label: function(tooltipItem, data) {
+                      		    return tooltipItem.yLabel;
+               			}
+            		    }
+        		  },
+      			  scales: {
+        		    yAxes: [ {
+          			display: true,
+				scaleBeginAtZero : true,
+          			scaleLabel: {
+            			    display: true,
+                                    fontSize: '14',
+            			    labelString: 'Percentage'
+          			}
+        		    } ]
+      			  }
+    			}
+                    });
+                });
+            }
+        }
+
+function downloadPDF() {
+	var newCanvas = document.querySelector('#graphCanvas');
+
+  	// create image from dummy canvas
+	var newCanvasImg = newCanvas.toDataURL("image/png", 1.0);
+
+  	// creates PDF from img
+	var doc = new jsPDF('landscape');
+	doc.setFontSize(20);
+	doc.text(15, 15, "PHL Resident Survey Progress");
+	doc.addImage(newCanvasImg, 'PNG', 10, 30, 280, 150 );
+	doc.save('ResidentProgress.pdf');
+}
